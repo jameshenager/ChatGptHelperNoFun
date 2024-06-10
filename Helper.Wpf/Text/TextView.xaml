@@ -1,0 +1,222 @@
+﻿<UserControl x:Class="Helper.Wpf.Text.TextView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:text="clr-namespace:Helper.Wpf.Text"
+             xmlns:converters1="clr-namespace:Wpf.Ui.Common.Converters;assembly=Wpf.Ui.Common"
+             xmlns:classes="clr-namespace:Wpf.Ui.Common.Classes;assembly=Wpf.Ui.Common"
+             xmlns:system="clr-namespace:System;assembly=System.Runtime"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=text:TextViewModel}">
+    <UserControl.Resources>
+        <converters1:BoolToMaxHeightConverter x:Key="BoolToMaxHeightConverter"/>
+        <converters1:BoolToMaxHeightMultiConverter x:Key="BoolToMaxHeightMultiConverter"/>
+        <classes:BindingProxy x:Key="Proxy" Data="{Binding}" />
+        <system:Double x:Key="MinRowHeight">50</system:Double>
+    </UserControl.Resources>
+
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding UserControlLoadedCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Expander Header="Filters" ExpandDirection="Right">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" MinHeight="40"  />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Button Grid.Row="3" Content="Statistics" Command="{Binding OpenStatsWindowCommand}" />
+
+                <GroupBox Grid.Row="0" Header="FullText Filter">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Label Grid.Row="0" Grid.Column="0" Content="Query" />
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding QuerySearch, UpdateSourceTrigger=PropertyChanged}"
+                             MaxHeight="100"
+                             Width="50"
+                             VerticalScrollBarVisibility="Auto">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding FullTextSearchCommand}" />
+                            </TextBox.InputBindings>
+                        </TextBox>
+                        <Label Grid.Row="1" Grid.Column="0" Content="Response" />
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ResponseSearch, UpdateSourceTrigger=PropertyChanged}"
+                             MaxHeight="100"
+                             Width="50"
+                             VerticalScrollBarVisibility="Auto">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding FullTextSearchCommand}" />
+                            </TextBox.InputBindings>
+                        </TextBox>
+
+                        <Button Grid.Row="2" Grid.Column="1" Content="Filter" Command="{Binding FullTextSearchCommand}" ToolTip="Filter Further" />
+                        <Button Grid.Row="3" Grid.Column="1" Content="Clear" Command="{Binding ClearFullTextFilterCommand}" ToolTip="Clear FullText Filters" />
+                    </Grid>
+                </GroupBox>
+
+                <GridSplitter Grid.Row="1" ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" Height="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+
+                <GroupBox Grid.Row="2" Header="Category Filter">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <ListView ItemsSource="{Binding CategoryCheckboxes}" Grid.Row="0">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}"/>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                        <Button Content="Filter" Command="{Binding FilterCategoriesCommand}" Grid.Row="1"/>
+                    </Grid>
+                </GroupBox>
+            </Grid>
+        </Expander>
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <DataGrid Grid.Row="0" ItemsSource="{Binding QuestionAnswers}"
+                      ScrollViewer.CanContentScroll="True" 
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto"
+                      AutoGenerateColumns="False"
+                      HeadersVisibility="Column"
+                      CanUserAddRows="false"
+                      HorizontalContentAlignment="Left"
+                      SelectionMode="Single">
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="ContextMenu">
+                            <Setter.Value>
+                                <ContextMenu>
+                                    <MenuItem Header="Open Detail View" 
+                                              Command="{Binding Path=Data.OpenTextDetailWindowCommand, Source={StaticResource Proxy}}" 
+                                              CommandParameter="{Binding}"/>
+                                </ContextMenu>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </DataGrid.RowStyle>
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseDoubleClick">
+                        <i:InvokeCommandAction
+                        Command="{Binding ToggleRowExpansionCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGrid}, Path=SelectedItem}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                <DataGrid.InputBindings>
+                    <KeyBinding Key="C" Modifiers="Control" Command="{Binding CopyRowToClipboardCommand}" CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}"/>
+                </DataGrid.InputBindings>
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Prompt" Width="200">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Prompt, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" >
+                                    <TextBlock.MaxHeight>
+                                        <MultiBinding Converter="{StaticResource BoolToMaxHeightMultiConverter}">
+                                            <Binding Path="IsExpanded"/>
+                                            <Binding Source="{StaticResource MinRowHeight}"/>
+                                        </MultiBinding>
+                                    </TextBlock.MaxHeight>
+                                </TextBlock>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Tokens" IsReadOnly="True" Binding="{Binding Path= PromptTokens}" />
+                    <DataGridTextColumn Header="Model"  IsReadOnly="True" Binding="{Binding Path= ModelUsed}" />
+                    <DataGridTextColumn Header="Tokens" IsReadOnly="True" Binding="{Binding Path= AnswerTokens}" />
+                    <DataGridTemplateColumn Header="Answer" Width="375">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <!--<TextBlock Text="{Binding Answer}" TextWrapping="Wrap" MaxHeight="{Binding IsExpanded, Converter={StaticResource BoolToMaxHeightConverter}, ConverterParameter='50'}" />-->
+                                <TextBlock Text="{Binding Answer}" TextWrapping="Wrap">
+                                    <TextBlock.MaxHeight>
+                                        <MultiBinding Converter="{StaticResource BoolToMaxHeightMultiConverter}">
+                                            <Binding Path="IsExpanded"/>
+                                            <Binding Source="{StaticResource MinRowHeight}"/>
+                                        </MultiBinding>
+                                    </TextBlock.MaxHeight>
+                                </TextBlock>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Category">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ComboBox ItemsSource="{Binding DataContext.Categories, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                      DisplayMemberPath="Name"
+                                      SelectedValuePath="CategoryId"
+                                      SelectedValue="{Binding SelectedCategoryId, UpdateSourceTrigger=PropertyChanged}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <TextBox Grid.Row="1" Text="{Binding CurrentQuery, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" MinHeight="40"
+                 MaxHeight="100"
+                 VerticalScrollBarVisibility="Auto">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Enter" Modifiers="Ctrl" Command="{Binding QueryCommand}" />
+                </TextBox.InputBindings>
+            </TextBox>
+            <StackPanel Grid.Row="2" Orientation="Horizontal">
+                <GroupBox Header="Est. Query Tokens">
+                    <TextBlock Text="{Binding CurrentQueryTokenCount}" />
+                </GroupBox>
+                <Button Content="Estimate input token" Width="200" Command="{Binding GetTokenCountCommand}"
+                    ToolTip="Just an estimate using a cheap engine." />
+                <Button Content="Query" Width="200" Command="{Binding QueryCommand}" />
+                <GroupBox Header="Select Model" ToolTip="Choose a model for querying">
+                    <ComboBox SelectedItem="{Binding SelectedModel}"
+                          ItemsSource="{Binding Models}"
+                          DisplayMemberPath="Name"/>
+                </GroupBox>
+
+                <GroupBox Header="Deterministic?" ToolTip="Makes querying much more expensive.">
+                    <CheckBox IsChecked="{Binding IsDeterministic}" />
+                </GroupBox>
+            </StackPanel>
+            <TextBox Grid.Row="3" Text="{Binding CurrentResponse}" AcceptsReturn="True" MinHeight="40"
+                 MaxHeight="100"
+                 VerticalScrollBarVisibility="Auto" />
+            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Previous" Command="{Binding PreviousPageCommand}"/>
+                <TextBlock Text="{Binding CurrentPage}" VerticalAlignment="Center" Margin="10,0"/>
+                <Button Content="Next" Command="{Binding NextPageCommand}" IsEnabled="{Binding HasMoreItems}"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

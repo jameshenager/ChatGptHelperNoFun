@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <PlatformTarget>x64</PlatformTarget>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Helper.Core\Helper.Core.csproj" />
+      <ProjectReference Include="..\Helper.ServiceGateways\Helper.ServiceGateways.csproj" />
+    </ItemGroup>
+
+</Project>
